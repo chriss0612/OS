@@ -1,0 +1,15 @@
+# CodeBlocks Files
+*.cbp
+*.depend
+*.layout
+
+#Compiled files
+*.iso
+*.bin
+
+#bin and obj folders
+bin/*
+obj/*
+
+#Object files
+*.o
