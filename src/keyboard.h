@@ -15,6 +15,8 @@ class KeyboardDriver : public InterruptHandler
     private:
         Port8Bit dataport;
         Port8Bit commandport;
+        bool shift = false;
+        uint8_t codetochar(uint8_t);
 };
 
 #endif // __KEYBOARD_H

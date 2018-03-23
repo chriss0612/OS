@@ -20,6 +20,18 @@ void TsetColor(vga_color b,vga_color f)
 }
 void TputC(char c)
 {
+    if(c == '\n')
+    {
+        _X=0;
+        _Y++;
+        return;
+    }
+    else if(c == '\r')
+    {
+        _X=0;
+        return;
+    }
+
     if(_X>=VGA_WIDTH)
     {
         _Y++;
@@ -36,19 +48,7 @@ void TputS(const char* str)
 {
     while(*str != '\0')
     {
-        if(*str == '\n')
-        {
-            _X=0;
-            _Y++;
-        }
-        else if(*str == '\r')
-        {
-            _X=0;
-        }
-        else
-        {
-            TputC(*str);
-        }
+        TputC(*str);
         str++;
     }
 }
