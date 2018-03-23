@@ -5,10 +5,26 @@
 #include "types.h"
 #include "port.h"
 
+
+class InterruptManager;
+
+class InterruptHandler
+{
+public:
+    virtual uint32_t HandleInterrupt(uint32_t esp);
+
+protected:
+    uint8_t interrupt;
+    InterruptManager *interruptManager;
+
+    InterruptHandler(uint8_t interrupt, InterruptManager *interruptManager);
+    ~InterruptHandler();
+};
+
 class InterruptManager
 {
+friend class InterruptHandler;
 protected:
-
     struct GateDescriptor
     {
         uint16_t handlerAddressLowBits;
@@ -19,6 +35,7 @@ protected:
     } __attribute__((packed));
 
     static GateDescriptor interruptDescriptorTable[256];
+    InterruptHandler *handlers[256];
 
     struct InterruptDescriptorTablePointer
     {
@@ -27,7 +44,7 @@ protected:
     } __attribute__((packed));
 
     uint16_t hardwareInterruptOffset;
-    //static InterruptManager* ActiveInterruptManager;
+    static InterruptManager* ActiveInterruptManager;
     static void SetInterruptDescriptorTableEntry(uint8_t interrupt,
             uint16_t codeSegmentSelectorOffset, void (*handler)(),
             uint8_t DescriptorPrivilegeLevel, uint8_t DescriptorType);
@@ -75,6 +92,7 @@ protected:
     static void HandleException0x13();
 
     static uint32_t HandleInterrupt(uint8_t interrupt, uint32_t esp);
+    uint32_t DoHandleInterrupt(uint8_t interrupt, uint32_t esp);
 
     Port8BitSlow programmableInterruptControllerMasterCommandPort;
     Port8BitSlow programmableInterruptControllerMasterDataPort;

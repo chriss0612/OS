@@ -3,8 +3,33 @@
 
 
 
-InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
+uint32_t InterruptHandler::HandleInterrupt(uint32_t esp)
+{
+    TputS("Empty Interrupt Handler");
+    return esp;
+}
 
+InterruptHandler::InterruptHandler(uint8_t interrupt, InterruptManager *interruptManager)
+{
+    this->interrupt = interrupt;
+    this->interruptManager = interruptManager;
+    /*if(interruptManager->handlers[interrupt])
+    {
+        delete interruptManager->handlers[interrupt];
+    }*/
+    interruptManager->handlers[interrupt] = this;
+}
+InterruptHandler::~InterruptHandler()
+{
+    if(interruptManager->handlers[interrupt] == this)
+    {
+        interruptManager->handlers[interrupt] = 0;
+    }
+}
+
+
+InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
+InterruptManager* InterruptManager::ActiveInterruptManager = 0;
 
 void InterruptManager::SetInterruptDescriptorTableEntry(uint8_t interrupt,
         uint16_t CodeSegment, void (*handler)(), uint8_t DescriptorPrivilegeLevel, uint8_t DescriptorType)
@@ -34,7 +59,7 @@ InterruptManager::InterruptManager(uint16_t hardwareInterruptOffset, GlobalDescr
     for(uint8_t i = 255; i > 0; --i)
     {
         SetInterruptDescriptorTableEntry(i, CodeSegment, &InterruptIgnore, 0, IDT_INTERRUPT_GATE);
-        //handlers[i] = 0;
+        handlers[i] = 0;
     }
     SetInterruptDescriptorTableEntry(0, CodeSegment, &InterruptIgnore, 0, IDT_INTERRUPT_GATE);
     //handlers[0] = 0;
@@ -111,32 +136,49 @@ uint16_t InterruptManager::HardwareInterruptOffset()
 
 void InterruptManager::Activate()
 {
-    //if(ActiveInterruptManager == 0)
+    if(ActiveInterruptManager == 0)
     {
-        //ActiveInterruptManager = this;
+        ActiveInterruptManager = this;
         asm("sti");
     }
 }
 
 void InterruptManager::Deactivate()
 {
-    /*if(ActiveInterruptManager == this)
+    if(ActiveInterruptManager == this)
     {
         ActiveInterruptManager = 0;
-        */
-    //asm("cli");
-    /*
-    }*/
+        asm("cli");
+    }
 }
-
 uint32_t InterruptManager::HandleInterrupt(uint8_t interrupt, uint32_t esp)
 {
-    char* foo = "INTERRUPT 0x00";
-    char* hex = "0123456789ABCDEF";
+    if(ActiveInterruptManager != 0)
+    {
+        return ActiveInterruptManager->DoHandleInterrupt(interrupt, esp);
+    }
+    return esp;
+}
+uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp)
+{
+    if(handlers[interrupt] != 0)
+    {
+        esp = handlers[interrupt]->HandleInterrupt(esp);
+    }
+    else if(interrupt != 0x20)
+    {
+        char *foo = (char *)"UNHANDLED INTERRUPT 0x00";
+        char *hex = (char *)"0123456789ABCD";
+        foo[22] = hex[(interrupt>>4)&0xF];
+        foo[23] = hex[interrupt&0xF];
+        TputS(foo);
+    }
 
-    foo[12] = hex[(interrupt >> 4) & 0xF];
-    foo[13] = hex[interrupt & 0xF];
-    TputS(foo);
-
+    if(0x20 <= interrupt && interrupt < 0x30)
+    {
+        programmableInterruptControllerMasterCommandPort.Write(0x20); //Anser the pic
+        if(0x28 <= interrupt)
+            programmableInterruptControllerSlaveCommandPort.Write(0x20);
+    }
     return esp;
 }

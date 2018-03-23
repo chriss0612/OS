@@ -2,16 +2,19 @@
 #include "terminal.h"
 #include "gdt.h"
 #include "interrupts.h"
+#include "keyboard.h"
 
 
 extern "C" void kernelMain(void* multiboot_structure, uint16_t magicnumber)
 {
+    TputS("Hello World! --myKernel\n>");
     GlobalDescriptorTable gdt;  //Constructing the Global Descriptor Table
     InterruptManager interrupts(0x20, &gdt);
+    KeyboardDriver keyboard(&interrupts);
+
+
 
     interrupts.Activate();      ///After inits
-    TputS("Hello World! --myKernel\n");
-    TputC('>');
     while(1)
     {
 

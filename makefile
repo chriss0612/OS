@@ -3,7 +3,7 @@ GPPPARMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-except
 ASPARMS = --32
 LDPARMS = -melf_i386
 
-objects = obj/loader.o obj/kernel.o obj/terminal.o obj/gdt.o obj/port.o obj/interrupts.o obj/interruptstub.o
+objects = obj/loader.o obj/kernel.o obj/terminal.o obj/gdt.o obj/port.o obj/interrupts.o obj/interruptstub.o obj/keyboard.o
 
 obj/%.o: src/%.cpp
 	g++ $(GPPPARMS) -o $@ -c $<

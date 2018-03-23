@@ -20,12 +20,12 @@ void TsetColor(vga_color b,vga_color f)
 }
 void TputC(char c)
 {
-    if(_X>VGA_WIDTH)
+    if(_X>=VGA_WIDTH)
     {
         _Y++;
         _X=0;
     }
-    if(_Y>VGA_HEIGHT)
+    if(_Y>=VGA_HEIGHT)
     {
         _Y=0;
     }
