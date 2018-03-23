@@ -27,4 +27,7 @@ void TsetColor(vga_color b,vga_color f);
 void TputC(char);
 void TputS(const char*);
 void TgetPos(uint8_t*x,uint8_t *y);
+char TgetChar(uint8_t x,uint8_t y);
+char TgetCol(uint8_t x,uint8_t y);
+void TswCol(uint8_t x,uint8_t y);
 #endif

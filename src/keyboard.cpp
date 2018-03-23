@@ -29,14 +29,14 @@ uint8_t KeyboardDriver::codetochar(uint8_t in)
     switch(in)
     {
         case 0xFA: break;
-        case 0x2A: shift=true;  break;
-        case 0xAA: shift=false; break;
+        case 0x36: case 0x2A: shift=true;  break;
+        case 0xAA: case 0xB6: shift=false; break;
 
         case 0x02: if(!shift) return'1'; return '!'; break;
         case 0x03: if(!shift) return'2'; return '"'; break;
         case 0x04: if(!shift) return'3'; return '§'; break;
         case 0x05: if(!shift) return'4'; return '$'; break;
-        case 0x06: if(!shift) return'1'; return '!'; break;
+        case 0x06: if(!shift) return'5'; return '%'; break;
         case 0x07: if(!shift) return'6'; return '&'; break;
         case 0x08: if(!shift) return'7'; return '/'; break;
         case 0x09: if(!shift) return'8'; return '('; break;
@@ -79,9 +79,9 @@ uint8_t KeyboardDriver::codetochar(uint8_t in)
         case 0x39: return ' '; break;
         break;
     default:
-        if(in<0x80)
+        if(in<0x80||!codetochar(in-0x80))
         {
-            char* foo = (char *)"KEYBOARD 0x00 \n";
+            char* foo = (char *)"KEYBOARD 0x00\n";
             char* hex = (char *)"0123456789ABCDEF";
             foo[11] = hex[(in >> 4) & 0xF];
             foo[12] = hex[in & 0xF];
