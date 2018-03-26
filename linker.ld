@@ -10,7 +10,7 @@ SECTIONS
     {
         *(.multiboot)
         *(.text*)
-        *(rnodata)
+        *(.rnodata)
     }
 
     .data :

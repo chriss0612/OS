@@ -1,9 +1,31 @@
-#include "Keyboard.h"
-#include "terminal.h"
+#include <drivers/keyboard.h>
+#include <common/terminal.h>
 
+using namespace mykernel::common;
+using namespace mykernel::drivers;
 
-KeyboardDriver::KeyboardDriver(InterruptManager *manager) : InterruptHandler(0x21,manager), dataport(0x60), commandport(0x64)
+void PrintKeyboard::OnKeyDown(char c)
 {
+    TputC(c);
+}
+
+void PrintKeyboard::OnKeyUp(char c)
+{
+
+}
+
+void KeyboardEventHandler::OnKeyDown(char c)
+{
+
+}
+void KeyboardEventHandler::OnKeyUp(char c)
+{
+
+}
+
+KeyboardDriver::KeyboardDriver(mykernel::hardwarecommunication::InterruptManager *manager, KeyboardEventHandler *handler) : InterruptHandler(0x21,manager), dataport(0x60), commandport(0x64)
+{
+    this->handler = handler;
     while(commandport.Read() & 0x1)
         dataport.Read();
     commandport.Write(0xAE);
@@ -19,9 +41,17 @@ KeyboardDriver::~KeyboardDriver()
 }
 uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp)
 {
-    uint8_t key = codetochar(dataport.Read());
-    if(key)
-        TputC(key);
+    uint8_t key = dataport.Read();
+    if(handler==0)
+        return esp;
+    if(key&0x80)
+    {
+        handler->OnKeyUp(codetochar(key));
+    }
+    else
+    {
+        handler->OnKeyDown(codetochar(key));
+    }
     return esp;
 }
 uint8_t KeyboardDriver::codetochar(uint8_t in)
@@ -79,13 +109,11 @@ uint8_t KeyboardDriver::codetochar(uint8_t in)
         case 0x39: return ' '; break;
         break;
     default:
-        if(in<0x80||!codetochar(in-0x80))
+        if(in<0x80)
         {
-            char* foo = (char *)"KEYBOARD 0x00\n";
-            char* hex = (char *)"0123456789ABCDEF";
-            foo[11] = hex[(in >> 4) & 0xF];
-            foo[12] = hex[in & 0xF];
-            TputS(foo);
+            TputS("KEYBOARD 0x");
+            TputHex(in);
+            TputC('\n');
         }
     }
     return 0;

@@ -1,17 +1,29 @@
 
-GPPPARMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wall -Wextra
+GPPPARMS = -m32 -Iinclude -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-exceptions -fno-leading-underscore -Wall -Wextra
 ASPARMS = --32
 LDPARMS = -melf_i386
 
-objects = obj/loader.o obj/kernel.o obj/terminal.o obj/gdt.o obj/port.o obj/interrupts.o obj/interruptstub.o obj/keyboard.o obj/mouse.o
+objects = 	obj/loader.o \
+			obj/gdt.o \
+			obj/drivers/driver.o \
+			obj/common/terminal.o\
+			obj/hardwarecommunication/port.o \
+			obj/hardwarecommunication/interruptstub.o \
+			obj/hardwarecommunication/interrupts.o \
+			obj/drivers/keyboard.o \
+			obj/drivers/mouse.o\
+			obj/kernel.o
 
 obj/%.o: src/%.cpp
+	mkdir -p $(@D)
 	g++ $(GPPPARMS) -o $@ -c $<
 
 obj/%.o: src/%.s
+	mkdir -p $(@D)
 	as $(ASPARMS) -o $@ $<
 
-bin/mykernel.bin: src/linker.ld $(objects)
+bin/mykernel.bin: linker.ld $(objects)
+	mkdir -p $(@D)
 	ld $(LDPARMS) -T $< -o $@ $(objects)
 
 install: bin/mykernel.bin
@@ -32,8 +44,5 @@ mykernel.iso: bin/mykernel.bin
 	rm -rf iso
 .PHONY: clean
 clean:
-	rm -rf obj
-	rm -rf bin
-	mkdir obj
-	mkdir bin
+	rm -rf obj bin
 	rm -f mykernel.iso

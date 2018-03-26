@@ -1,7 +1,8 @@
-#include "interrupts.h"
-#include "terminal.h"
+#include <hardwarecommunication/interrupts.h>
+#include <common/terminal.h>
 
-
+using namespace mykernel::hardwarecommunication;
+using namespace mykernel::common;
 
 uint32_t InterruptHandler::HandleInterrupt(uint32_t esp)
 {
@@ -167,13 +168,10 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp)
     }
     else if(interrupt != 0x20)
     {
-        char *foo = (char *)"UNHANDLED INTERRUPT 0x00";
-        char *hex = (char *)"0123456789ABCD";
-        foo[22] = hex[(interrupt>>4)&0xF];
-        foo[23] = hex[interrupt&0xF];
-        TputS(foo);
+        TputS("UNHANDLED INTERRUPT 0x");
+        TputHex(interrupt);
+        TputC('\n');
     }
-
     if(0x20 <= interrupt && interrupt < 0x30)
     {
         programmableInterruptControllerMasterCommandPort.Write(0x20); //Anser the pic

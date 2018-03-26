@@ -1,4 +1,7 @@
-#include "gdt.h"
+#include <gdt.h>
+
+using namespace mykernel;
+using namespace mykernel::common;
 
 GlobalDescriptorTable::GlobalDescriptorTable()
     : nullSegmentSelector(0, 0, 0),

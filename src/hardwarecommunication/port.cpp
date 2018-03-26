@@ -1,4 +1,7 @@
-#include "port.h"
+#include <hardwarecommunication/port.h>
+
+using namespace mykernel::hardwarecommunication;
+using namespace mykernel::common;
 
 Port::Port(uint16_t portnumber)
 {
