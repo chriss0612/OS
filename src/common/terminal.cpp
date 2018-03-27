@@ -67,6 +67,10 @@ void mykernel::common::TputHex(uint64_t in)
 }
 void mykernel::common::TputC(char c)
 {
+    if(_X<0)
+        _X=0;
+    if(_Y<0)
+        _Y=0;
     if(_X>=VGA_WIDTH)
     {
         _Y++;
@@ -74,7 +78,18 @@ void mykernel::common::TputC(char c)
     }
     if(_Y>=VGA_HEIGHT)
     {
-        _Y=0;
+        for(int i = 0; i < VGA_WIDTH*VGA_HEIGHT*2; i+=2)
+        {
+            if(i>=(VGA_HEIGHT-_Y))
+            {
+                *((char *)(VID_MEM + i)) = ' ';
+            }
+            else
+            {
+                *((char *)(VID_MEM + i)) = *((char *)(VID_MEM + i - _Y*VGA_HEIGHT));
+            }
+        }
+        _Y=VGA_HEIGHT;
     }
     if(c == '\n')
     {
@@ -82,7 +97,21 @@ void mykernel::common::TputC(char c)
         _Y++;
         if(_Y>=VGA_HEIGHT)
         {
-            _Y=0;
+            for(int y = 0; y < VGA_HEIGHT; y++)
+            {
+                for(int x = 0; x <VGA_WIDTH; x++)
+                {
+                    if(y>=VGA_HEIGHT-(_Y-VGA_HEIGHT)-1)
+                    {
+                        *((uint16_t *)(VID_MEM) + (x + y * VGA_WIDTH)) = 0x0F00 | ' ';
+                    }
+                    else
+                    {
+                        *((uint16_t *)(VID_MEM) + (x + y * VGA_WIDTH)) = (*((uint16_t *)(VID_MEM) + (x + (y + 1) * VGA_WIDTH)));
+                    }
+                }
+            }
+            _Y=VGA_HEIGHT-1;
         }
         return;
     }
@@ -102,16 +131,16 @@ void mykernel::common::TputS(const char* str)
         str++;
     }
 }
-void mykernel::common::TgetPos(uint8_t*x,uint8_t *y)
+void mykernel::common::TgetPos(uint8_t*x, uint8_t *y)
 {
     *x = _X;
     *y = _Y;
 }
-char mykernel::common::TgetChar(uint8_t x,uint8_t y)
+char mykernel::common::TgetChar(uint8_t x, uint8_t y)
 {
     return (*(((uint16_t*)VID_MEM)+(x + y * VGA_WIDTH)))&0xFF;
 }
-char mykernel::common::TgetCol(uint8_t x,uint8_t y)
+char mykernel::common::TgetCol(uint8_t x, uint8_t y)
 {
     return ((*(((uint16_t*)VID_MEM)+(x + y * VGA_WIDTH)))>>8)&0xFF;
 }
